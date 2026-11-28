@@ -79,6 +79,10 @@ export class Renderer {
       hurt: blink,
     });
 
+    // Hidden behind a hay bale: the bale's front goes over the bird, so
+    // only its head and tail peek out while the farmer searches.
+    if (t.hidden && t.hideItem) drawHayBale(ctx, t.hideItem.x - game.cameraX, GROUND_Y);
+
     // His shout goes on top of everything, or the turkey's tail eats it.
     if (game.farmer.bubbleT > 0 && game.farmer.bubble) {
       this.drawBubble(ctx, farmerX + 30, GROUND_Y - 218, game.farmer.bubble);
@@ -165,13 +169,30 @@ export class Renderer {
     ctx.lineTo(VIEW_W, GROUND_Y);
     ctx.fill();
 
+    // A mid-ground fence line running the length of the farm, between the
+    // hills and the road: it fills the empty band under the sky and gives
+    // the run something to race past.
+    const fenceOff = -(game.cameraX * 0.62) % 110;
+    ctx.strokeStyle = 'rgba(122,79,40,0.55)';
+    ctx.lineWidth = 5;
+    for (const railY of [GROUND_Y - 118, GROUND_Y - 94]) {
+      ctx.beginPath();
+      ctx.moveTo(-12, railY);
+      ctx.lineTo(VIEW_W + 12, railY);
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(110,70,36,0.6)';
+    for (let x = fenceOff - 110; x < VIEW_W + 110; x += 110) {
+      ctx.fillRect(x, GROUND_Y - 128, 8, 44);
+    }
+
     // Autumn trees on the near line.
     for (let i = 0; i < 9; i++) {
       const spacing = 300;
       const base = Math.floor((game.cameraX * 0.42) / spacing);
       const tx = (base + i) * spacing - game.cameraX * 0.42 + hash(base + i) * 90;
       if (tx < -70 || tx > VIEW_W + 70) continue;
-      const s = 0.8 + hash(base + i * 3) * 0.5;
+      const s = (0.8 + hash(base + i * 3) * 0.5) * 1.25;
       ctx.fillStyle = '#5d3a1e';
       ctx.fillRect(tx - 4 * s, GROUND_Y - 66 * s, 8 * s, 66 * s);
       const cols = ['#c96a2e', '#d98e3a', '#b84a2e'];
@@ -199,20 +220,20 @@ export class Renderer {
       const wx = off + i * 420;
       // Window with the green world outside.
       ctx.fillStyle = '#5d3a1e';
-      ctx.fillRect(wx + 60, 74, 150, 168);
-      const grad = ctx.createLinearGradient(0, 74, 0, 242);
+      ctx.fillRect(wx + 56, 60, 158, 204);
+      const grad = ctx.createLinearGradient(0, 70, 0, 254);
       grad.addColorStop(0, '#7ec8e3');
       grad.addColorStop(1, '#cfe8b8');
       ctx.fillStyle = grad;
-      ctx.fillRect(wx + 70, 84, 130, 148);
+      ctx.fillRect(wx + 66, 70, 138, 184);
       ctx.fillStyle = '#3f7d4e';
       ctx.beginPath();
-      ctx.ellipse(wx + 100, 232, 60, 26, 0, Math.PI, Math.PI * 2);
-      ctx.ellipse(wx + 165, 232, 52, 20, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(wx + 100, 254, 60, 26, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(wx + 165, 254, 52, 20, 0, Math.PI, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#5d3a1e';
-      ctx.fillRect(wx + 130, 84, 7, 148);
-      ctx.fillRect(wx + 70, 152, 130, 7);
+      ctx.fillRect(wx + 132, 70, 7, 184);
+      ctx.fillRect(wx + 66, 158, 138, 7);
       // Hanging pans and a string of garlic beside it.
       ctx.fillStyle = '#3c3f45';
       ctx.beginPath();
@@ -230,6 +251,46 @@ export class Renderer {
         ctx.ellipse(wx + 262 + (g % 2) * 9, 108 + g * 21, 7.5, 10, 0, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // A shelf of preserve jars across the middle of the wall, and a rail
+      // of hanging utensils under it: the band the chase runs through
+      // should read as a working kitchen, not an empty wall.
+      ctx.fillStyle = '#5d3a1e';
+      ctx.fillRect(wx + 36, 330, 348, 10);
+      const jarFills = ['#b84a2e', '#e09f3e', '#7ec850'];
+      for (let j = 0; j < 3; j++) {
+        const jx = wx + 84 + j * 96;
+        ctx.fillStyle = 'rgba(238,230,210,0.92)';
+        ctx.beginPath();
+        ctx.roundRect(jx, 288, 38, 42, 6);
+        ctx.fill();
+        ctx.fillStyle = jarFills[j];
+        ctx.beginPath();
+        ctx.roundRect(jx + 4, 302, 30, 24, 5);
+        ctx.fill();
+        ctx.fillStyle = '#8a5a2e';
+        ctx.fillRect(jx + 3, 282, 32, 8);
+      }
+      ctx.fillStyle = '#3c2417';
+      ctx.fillRect(wx + 36, 402, 348, 6);
+      ctx.strokeStyle = '#2e2a26';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      for (const ux of [wx + 96, wx + 200, wx + 304]) {
+        ctx.beginPath();
+        ctx.moveTo(ux, 408);
+        ctx.lineTo(ux, 436);
+        ctx.stroke();
+      }
+      // Ladle bowl, spatula head and a little saucepan, hanging in a row.
+      ctx.fillStyle = '#454b52';
+      ctx.beginPath();
+      ctx.ellipse(wx + 96, 446, 11, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(wx + 190, 436, 20, 24);
+      ctx.beginPath();
+      ctx.ellipse(wx + 304, 448, 17, 11, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
     }
 
     // Checkered floor.
@@ -286,6 +347,22 @@ export class Renderer {
         ctx.ellipse(screenX, GROUND_Y + 6, 8 + h * 20, 3.5 + h * 3.5, 0, 0, Math.PI * 2);
         ctx.fill();
         if (item.state !== 'armed' || screenX < 1100) drawKnife(ctx, screenX, item.y + 46, item.state === 'falling' ? Math.sin(game.time * 30) * 0.05 : 0);
+        // A flashing marker at the top of the knife's column: the fair
+        // warning that something sharp is about to arrive there.
+        if (item.state !== 'stuck' && screenX > 30 && screenX < VIEW_W - 30) {
+          const pulse = 0.62 + Math.sin(game.time * 10) * 0.38;
+          ctx.save();
+          ctx.globalAlpha = pulse;
+          ctx.fillStyle = COLORS.red;
+          ctx.beginPath();
+          ctx.moveTo(screenX, 96);
+          ctx.lineTo(screenX + 13, 120);
+          ctx.lineTo(screenX - 13, 120);
+          ctx.closePath();
+          ctx.fill();
+          text(ctx, '!', screenX, 111, 'bold 15px system-ui, sans-serif', COLORS.cream, 'center');
+          ctx.restore();
+        }
         break;
       }
     }
@@ -405,8 +482,9 @@ export class Renderer {
     text(ctx, 'duck the cleavers, dodge the falling knives, grab the corn.', VIEW_W / 2, 448, '19px Georgia, serif', '#f2e2c4', 'center');
 
     const pulse = 0.72 + Math.sin(game.time * 4) * 0.28;
+    panel(ctx, 165, 512, 950, 102, 'rgba(30,17,8,0.44)', 16);
     text(ctx, 'PRESS SPACE OR CLICK TO RUN FOR YOUR LIFE', VIEW_W / 2, 540, 'bold 27px Georgia, serif', '#ffd94d', 'center', pulse);
-    text(ctx, 'SPACE / CLICK — jump (again mid-air for a feather-flutter)      DOWN — duck      M — mute', VIEW_W / 2, 584, '17px system-ui, sans-serif', 'rgba(43,26,16,0.8)', 'center');
+    text(ctx, 'SPACE / CLICK — jump (again mid-air for a feather-flutter)      DOWN — duck      M — mute', VIEW_W / 2, 584, '17px system-ui, sans-serif', '#f7e3b8', 'center');
     if (game.best > 0) text(ctx, `BEST SCORE  ${game.best}`, VIEW_W / 2, 626, 'bold 19px Georgia, serif', '#7a2d16', 'center');
   }
 
@@ -437,7 +515,6 @@ export class Renderer {
     const fake = { ...game, distanceM: ESCAPE_METERS, cameraX: ESCAPE_METERS * PX_PER_METER - 700 };
     this.drawBackdrop(ctx, fake, STAGES[3]);
     this.drawGround(ctx, fake, STAGES[3]);
-    drawGate(ctx, 700, GROUND_Y);
 
     // Sunburst behind the free bird.
     ctx.save();
@@ -455,19 +532,23 @@ export class Renderer {
     }
     ctx.restore();
 
+    // The gate goes over the sunburst, so FREEDOM stays readable.
+    drawGate(ctx, 700, GROUND_Y);
+
     drawTurkey(ctx, 880, GROUND_Y, { run: game.time * 10, tilt: -0.06, duck: 0, flap: 0.6 + Math.sin(game.time * 6) * 0.3 });
     this.drawParticles(ctx, game);
     this.drawLeaves(ctx, game.time);
 
     text(ctx, 'ESCAPED!', VIEW_W / 2, 118, 'bold 96px Georgia, serif', '#2e5d3a', 'center');
     text(ctx, 'Free as a bird — no dinner tonight, farmer!', VIEW_W / 2, 184, '24px Georgia, serif', COLORS.ink, 'center');
-    this.drawStats(ctx, game);
+    this.drawStats(ctx, game, 232);
     const pulse = 0.72 + Math.sin(game.time * 4) * 0.28;
-    text(ctx, 'PRESS SPACE TO RUN AGAIN', VIEW_W / 2, 560, 'bold 26px Georgia, serif', '#7a2d16', 'center', pulse);
+    panel(ctx, 415, 570, 450, 50, 'rgba(30,17,8,0.45)', 14);
+    text(ctx, 'PRESS SPACE TO RUN AGAIN', VIEW_W / 2, 595, 'bold 26px Georgia, serif', '#ffd94d', 'center', pulse);
   }
 
-  drawStats(ctx, game) {
-    panel(ctx, 440, 258, 400, 168, 'rgba(30,17,8,0.66)', 18);
+  drawStats(ctx, game, topY = 258) {
+    panel(ctx, 440, topY, 400, 168, 'rgba(30,17,8,0.66)', 18);
     const rows = [
       ['SCORE', String(game.score)],
       ['DISTANCE', `${Math.floor(game.distanceM)} m`],
@@ -476,8 +557,8 @@ export class Renderer {
       ['BEST', `${game.best}`],
     ];
     rows.forEach(([k, v], i) => {
-      text(ctx, k, 478, 294 + i * 31, 'bold 17px system-ui, sans-serif', '#e8c88a');
-      text(ctx, v, 802, 294 + i * 31, 'bold 20px Georgia, serif', COLORS.cream, 'right');
+      text(ctx, k, 478, topY + 36 + i * 31, 'bold 17px system-ui, sans-serif', '#e8c88a');
+      text(ctx, v, 802, topY + 36 + i * 31, 'bold 20px Georgia, serif', COLORS.cream, 'right');
     });
   }
 }

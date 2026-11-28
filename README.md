@@ -15,7 +15,9 @@ you the whole way, shouting about gravy.
 - **Jump** the fences, hay bales and pumpkins — press again mid-air for a
   feather-flutter double jump.
 - **Duck** the flying cleavers; never be standing where a falling carving
-  knife lands (watch its shadow).
+  knife lands (watch its shadow — and the warning marker above its column).
+- **Hide** behind hay bales: duck into one and the farmer loses your trail
+  entirely, winning back ground faster than running ever does.
 - **Grab the corn**: every cob distracts the farmer and buys you ground;
   golden corn is worth four times as much.
 - **Stumble and he lunges.** Three hearts, one ever-closing gap, and a

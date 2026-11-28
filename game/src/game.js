@@ -46,6 +46,8 @@ export class Game {
       invuln: 0,
       tilt: 0,
       inMud: false,
+      hidden: false, // ducked behind a hay bale, out of the farmer's sight
+      hideItem: null, // the bale doing the hiding (the renderer re-draws it in front)
     };
     this.farmer = {
       gap: TUNING.farmerStartGap,
@@ -181,7 +183,11 @@ export class Game {
     // --- the farmer -------------------------------------------------------
     f.cleanTime += dt;
     if (t.inMud) f.cleanTime = 0;
-    if (f.cleanTime > 1.6) {
+    if (t.hidden) {
+      // Ducked behind a hay bale, he loses the trail entirely: the gap
+      // grows back faster than clean running ever wins it.
+      f.gap = Math.min(TUNING.farmerMaxGap, f.gap + TUNING.farmerRecovery * 1.6 * dt);
+    } else if (f.cleanTime > 1.6) {
       f.gap = Math.min(TUNING.farmerMaxGap, f.gap + TUNING.farmerRecovery * dt);
     } else {
       f.gap -= TUNING.farmerPressure * dt * (t.inMud ? 6 : 1);
@@ -225,6 +231,8 @@ export class Game {
     const t = this.turkey;
     const turkeyWorldX = this.cameraX + TURKEY_X;
     t.inMud = false;
+    t.hidden = false;
+    t.hideItem = null;
 
     for (const item of this.world.items) {
       const screenX = item.x - this.cameraX;
@@ -298,10 +306,28 @@ export class Game {
           }
         }
       }
+      // Hiding: duck low behind a hay bale and the farmer loses you. The
+      // bale is cover, not a hurdle, while you are ducked into it.
+      if (
+        item.type === 'hay' &&
+        t.grounded &&
+        t.duck > 0.6 &&
+        Math.abs(screenX - TURKEY_X) < fp.w / 2 + 26
+      ) {
+        t.hidden = true;
+        t.hideItem = item;
+        if (!item.hideShown) {
+          item.hideShown = true;
+          this.popup(TURKEY_X + 12, GROUND_Y - 122, 'HIDDEN!', '#ffd94d');
+          this.say('Where did it go?!', 1.6);
+        }
+      }
+
       if (
         !item.hit &&
         Math.abs(screenX - TURKEY_X) < fp.w / 2 + 20 &&
-        t.feetY > top + 16
+        t.feetY > top + 16 &&
+        !(item.type === 'hay' && t.duck > 0.6)
       ) {
         item.hit = true;
         this.stumble(screenX);

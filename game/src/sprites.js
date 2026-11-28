@@ -36,6 +36,11 @@ export function drawTurkey(ctx, x, feetY, opts = {}) {
 
   ctx.save();
   ctx.translate(x, hipY);
+  // Drawn 1.3x around the ground-contact point, so the bird reads at a
+  // glance in a thumbnail while its feet stay planted on the dirt line.
+  ctx.translate(0, 34 * squash + bob);
+  ctx.scale(1.3, 1.3);
+  ctx.translate(0, -(34 * squash + bob));
   ctx.rotate(tilt);
 
   // Legs: two orange sticks trading places with the run cycle.
@@ -115,6 +120,10 @@ export function drawFarmer(ctx, x, feetY, opts = {}) {
 
   ctx.save();
   ctx.translate(x, hipY);
+  // 1.22x around the ground-contact point: a bigger, closer farmer.
+  ctx.translate(0, 62 + bob);
+  ctx.scale(1.22, 1.22);
+  ctx.translate(0, -(62 + bob));
   ctx.rotate(lunge * 0.10);
 
   // Legs in denim, pumping.
@@ -165,6 +174,16 @@ export function drawFarmer(ctx, x, feetY, opts = {}) {
   ellipse(ctx, 2, -38, 17, 16, COLORS.farmerSkin);
   ellipse(ctx, 6, -28, 12, 9, '#e8e0d0');
   ellipse(ctx, 10, -40, 3.2, 3.6, COLORS.ink);
+  // An angry brow when he lunges: dinner is getting away.
+  if (lunge > 0.4) {
+    ctx.strokeStyle = '#5d3a1e';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(3, -47);
+    ctx.lineTo(15, -43);
+    ctx.stroke();
+  }
   ctx.fillStyle = COLORS.farmerHat;
   ctx.beginPath();
   ctx.ellipse(2, -50, 27, 6, 0, 0, Math.PI * 2);
@@ -176,11 +195,13 @@ export function drawFarmer(ctx, x, feetY, opts = {}) {
   ctx.restore();
 }
 
-// A carving knife, drawn pointing down, blade first.
+// A carving knife, drawn pointing down, blade first — big enough to read
+// as a threat from across the room (and across a contact sheet).
 export function drawKnife(ctx, x, y, angle = 0) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
+  ctx.scale(1.7, 1.7);
   ctx.fillStyle = '#d7dde3';
   ctx.beginPath();
   ctx.moveTo(-5, -26);
@@ -191,6 +212,9 @@ export function drawKnife(ctx, x, y, angle = 0) {
   ctx.fill();
   ctx.fillStyle = '#aeb6bd';
   ctx.fillRect(-5, -26, 3.5, 40);
+  // A gleam down the blade's edge.
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.fillRect(3.4, -22, 1.6, 30);
   roundRect(ctx, -4.5, -44, 9, 19, 4, '#5d3a1e');
   ctx.restore();
 }
@@ -200,6 +224,7 @@ export function drawCleaver(ctx, x, y, spin = 0) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(spin);
+  ctx.scale(1.3, 1.3);
   ctx.fillStyle = '#ccd3d9';
   ctx.fillRect(-22, -15, 40, 30);
   ctx.fillStyle = '#9aa4ab';
@@ -254,6 +279,10 @@ export function drawCorn(ctx, x, y, golden = false, t = 0) {
 }
 
 export function drawHayBale(ctx, x, groundY) {
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(1.2, 1.2);
+  ctx.translate(-x, -groundY);
   ellipse(ctx, x, groundY - 24, 34, 25, '#d9a441');
   ellipse(ctx, x, groundY - 24, 25, 18, '#e5b95c');
   ctx.strokeStyle = '#b9822e';
@@ -264,9 +293,14 @@ export function drawHayBale(ctx, x, groundY) {
   ctx.beginPath();
   ctx.ellipse(x, groundY - 24, 6, 4, 0, 0, Math.PI * 2);
   ctx.stroke();
+  ctx.restore();
 }
 
 export function drawFence(ctx, x, groundY) {
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(1.15, 1.15);
+  ctx.translate(-x, -groundY);
   ctx.fillStyle = '#9a6a38';
   ctx.fillRect(x - 30, groundY - 52, 8, 52);
   ctx.fillRect(x + 22, groundY - 52, 8, 52);
@@ -276,9 +310,14 @@ export function drawFence(ctx, x, groundY) {
   ctx.fillStyle = '#8a5a2e';
   ctx.fillRect(x - 36, groundY - 46, 72, 3);
   ctx.fillRect(x - 36, groundY - 26, 72, 3);
+  ctx.restore();
 }
 
 export function drawPumpkins(ctx, x, groundY, rng) {
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(1.2, 1.2);
+  ctx.translate(-x, -groundY);
   const big = 15 + (rng ? rng.range(0, 5) : 3);
   ellipse(ctx, x, groundY - big + 4, big + 5, big, '#d97c26');
   ellipse(ctx, x - big - 8, groundY - 8, 10, 8, '#e08a30');
@@ -291,6 +330,7 @@ export function drawPumpkins(ctx, x, groundY, rng) {
   }
   ctx.fillStyle = '#5d7a35';
   ctx.fillRect(x - 3, groundY - big * 2 - 1, 6, 8);
+  ctx.restore();
 }
 
 export function drawMud(ctx, x, groundY, w) {
@@ -310,6 +350,10 @@ export function drawMud(ctx, x, groundY, w) {
 
 // The kitchen's horror: a cast-iron oven with a flickering fire inside.
 export function drawOven(ctx, x, groundY, t = 0) {
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(1.12, 1.12);
+  ctx.translate(-x, -groundY);
   const w = 96;
   const h = 118;
   roundRect(ctx, x - w / 2, groundY - h, w, h, 10, '#33383e');
@@ -334,9 +378,14 @@ export function drawOven(ctx, x, groundY, t = 0) {
   ctx.fillRect(x - 34, groundY - 92, 68, 5);
   for (let i = -1; i <= 1; i++) ellipse(ctx, x + i * 24, groundY - h + 16, 6, 6, '#c8ced4');
   roundRect(ctx, x + 22, groundY - h - 26, 16, 28, 4, '#33383e');
+  ctx.restore();
 }
 
 export function drawCounter(ctx, x, groundY) {
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(1.1, 1.1);
+  ctx.translate(-x, -groundY);
   roundRect(ctx, x - 52, groundY - 64, 104, 64, 5, '#7a4a26');
   roundRect(ctx, x - 58, groundY - 72, 116, 12, 5, '#a8a29a');
   ctx.fillStyle = '#5d3a1e';
@@ -345,10 +394,15 @@ export function drawCounter(ctx, x, groundY) {
   // A pie cooling on top, cruelly out of reach.
   ellipse(ctx, x + 8, groundY - 76, 17, 6, '#c98f54');
   ellipse(ctx, x + 8, groundY - 79, 13, 4.5, '#a8622e');
+  ctx.restore();
 }
 
 // The forest gate: two pines and a wooden arch that says FREEDOM.
 export function drawGate(ctx, x, groundY) {
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(1.08, 1.08);
+  ctx.translate(-x, -groundY);
   ctx.fillStyle = '#5d3a1e';
   ctx.fillRect(x - 64, groundY - 190, 13, 190);
   ctx.fillRect(x + 51, groundY - 190, 13, 190);
@@ -373,4 +427,5 @@ export function drawGate(ctx, x, groundY) {
     ctx.fillStyle = '#5d3a1e';
     ctx.fillRect(px - 4, groundY - 42, 8, 42);
   }
+  ctx.restore();
 }
