@@ -32,6 +32,7 @@ export function stageShot(game, name) {
     game.best = 23150;
     game.distanceM = ESCAPE_METERS;
     game.cornCount = 41;
+    game.bestCombo = 12;
     game.nearMisses = 9;
     game.endT = 1;
     const cols = ['#ffd94d', '#7ec850', '#f2e2c4', '#e09f3e'];
@@ -42,15 +43,24 @@ export function stageShot(game, name) {
   }
 
   if (name === 'play') {
-    // The farmyard hide: ducked behind a hay bale while the farmer
-    // searches, a knife already falling on the road ahead.
+    // The farmyard hide, mid-rally: the farmer's second wind is on (the
+    // banner is still up, his meter reads RALLY) and the turkey breaks
+    // it the only safe way — ducked behind a hay bale while he searches,
+    // its corn streak alive on the HUD, a knife falling on the road ahead.
     freshWorld(game, 5);
     game.state = 'play';
-    game.distanceM = 128;
-    game.cameraX = 128 * PX_PER_METER;
-    game.score = 2840;
+    game.distanceM = 176;
+    game.cameraX = 176 * PX_PER_METER;
+    game.score = 3560;
     game.hearts = 3;
-    game.cornCount = 7;
+    game.cornCount = 11;
+    game.combo = 3;
+    game.comboT = 1.5;
+    game.bestCombo = 6;
+    game.rallyPhase = 'rally';
+    game.rallyT = 3.1;
+    game.rallyNext = 0;
+    game.rallyBannerT = 1.3;
     game.turkey.feetY = GROUND_Y;
     game.turkey.grounded = true;
     game.turkey.duck = 1;
@@ -77,7 +87,9 @@ export function stageShot(game, name) {
   }
 
   // cover: the kitchen at full drama — the turkey mid-leap over a flaming
-  // oven, a knife on its way down, the farmer lunging close behind.
+  // oven, snatching the golden corn off the falling knife's own column
+  // at the top of a ×5 streak, the farmer lunging close behind in the
+  // last seconds of his kitchen rally (his meter reads RALLY).
   freshWorld(game, 7);
   game.state = 'play';
   game.distanceM = 812;
@@ -86,6 +98,13 @@ export function stageShot(game, name) {
   game.hearts = 2;
   game.cornCount = 23;
   game.nearMisses = 5;
+  game.combo = 5;
+  game.comboT = 1.9;
+  game.bestCombo = 9;
+  game.rallyPhase = 'rally';
+  game.rallyT = 2.0;
+  game.rallyNext = 3;
+  game.rallyBannerT = 0;
   game.turkey.feetY = GROUND_Y - 172;
   game.turkey.grounded = false;
   game.turkey.vy = 120;
@@ -101,11 +120,13 @@ export function stageShot(game, name) {
     { type: 'pumpkin', x: c + 120 },
     { type: 'oven', x: c + 455 },
     { type: 'knife', x: c + 540, state: 'falling', y: 300, vy: 430 },
+    { type: 'goldcorn', x: c + 540, y: 470 },
     { type: 'corn', x: c + 700, y: 512 },
     { type: 'corn', x: c + 744, y: 484 },
     { type: 'corn', x: c + 788, y: 512 },
     { type: 'counter', x: c + 1022 },
   ];
+  game.popups.push({ x: 548, y: GROUND_Y - 252, text: '+500 GOLD ×5!', color: '#ffd94d', t: 0 });
   game.world.lastStage = 2;
   game.world.stageBannerT = 2.4;
   feather(game, 330, GROUND_Y - 190, '#f2e2c4', 5);

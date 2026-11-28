@@ -91,6 +91,13 @@ export class SoundBoard {
   }
 
   squawk() { this.tone(700, 1180, 0.13, 'square', 0.10); }
+  rally() {
+    // The farmer's second wind, announced like a hunting horn: two low
+    // blasts and a rising third, so the surge is heard before it is felt.
+    this.tone(196, 185, 0.15, 'sawtooth', 0.13);
+    this.tone(196, 185, 0.15, 'sawtooth', 0.13, 0.19);
+    this.tone(262, 330, 0.24, 'sawtooth', 0.13, 0.38);
+  }
   flutter() { this.noise(0.16, 0.10, 0, 900, 2600); }
   whistle() { this.tone(2600, 620, 0.5, 'sine', 0.12); }
   thunk() { this.tone(150, 55, 0.14, 'sine', 0.30); this.noise(0.06, 0.10); }

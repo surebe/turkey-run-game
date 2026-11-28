@@ -31,6 +31,11 @@ export const TUNING = {
   cornScore: 25,
   goldCornScore: 100,
   nearMissScore: 15,
+  comboWindow: 2.4, // s to grab the next cob before the streak cools
+  comboMaxMult: 5, // the streak multiplier never grows past this
+  rallyPressure: 3.0, // the farmer claws back this much faster mid-rally
+  rallySeconds: 4.2, // how long a farmer rally lasts
+  rallyWindedSeconds: 2.4, // how long he needs to catch his breath after
 };
 
 // The run crosses four stages; each names its sky, its ground and its dangers.

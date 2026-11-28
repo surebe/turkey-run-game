@@ -1,4 +1,4 @@
-# SELF-CHECK — Gobble Dash improvement pass + art overhaul (28 Nov 2026)
+# SELF-CHECK — Gobble Dash improvement pass + art overhaul + depth pass (28 Nov 2026)
 
 Graded against the judge's own criteria in the kit's RULES.txt, in the
 judge's order. The judge sees one contact sheet (cover at 768×480, the
@@ -20,17 +20,52 @@ and caught → restart.
 Lemah: the caught end screen exists and works but is not one of the
 four shots (the criterion accepts caught *or* escaped; we show escaped).
 
-## 2. Fun and depth — SEDANG, naik
+## 2. Fun and depth — KUAT (naik dari SEDANG; the depth pass)
 Four stages (Farmyard → Barnyard → Kitchen → Home Stretch) with rising
 danger density and speed; jump + feather-flutter double jump with
 variable height; ducking; near-miss slow motion; a corn economy that
 moves the farmer's gap; mud that slows you while he closes; a farmer
-who pressures, recovers, lunges on stumbles and taunts. NEW this pass:
-hiding — duck behind a hay bale and he loses the trail (gap regrows
-faster than clean running; verified live: hidden=true, gap 315 → 345,
-no stumble), shown in shot 3 with his "WHERE DID IT GO?!" bubble.
-Lemah: at heart it is still a one-lane runner — no branching routes,
-and difficulty grows by speed and density only.
+who pressures, recovers, lunges on stumbles and taunts; hiding — duck
+behind a hay bale and he loses the trail (gap regrows faster than
+clean running; verified live: hidden=true, gap 315 → 345, no stumble).
+NEW in the depth pass, three systems that make the run a series of
+choices instead of a single reflex:
+- **Corn combo streaks.** Cobs grabbed within 2.4 s of each other chain
+  into a streak that multiplies every pickup up to ×5; the HUD grows a
+  COMBO pill with a draining clock bar, popups pay out "+150 ×3", a
+  stumble breaks the streak ("STREAK LOST"), and the end screen keeps
+  a BEST COMBO row — a score to chase on the next run. Routing through
+  an arc instead of around it is now the fast way home, not greed.
+  Verified live in-browser: streak 1→2→3→4 paying ×1/×2/×3/×4, then
+  cooling back to zero when the cobs stop.
+- **The farmer rally.** Once a stage (170 / 490 / 770 / 950 m) he finds
+  a second wind: a "FARMER RALLY!" banner, a hunting-horn sound, his
+  meter label flipping to RALLY and pulsing red, and 4.2 s of triple
+  pressure with no ground won back — unless you hide, which blunts it
+  outright. Then he is winded for 2.4 s ("…wheeze…") and the gap is
+  yours again. The chase now has peaks to survive and valleys to cash
+  in, and the farmer corners as well as chases. Verified live: calm →
+  rally at exactly 170 m → winded → calm, rally counter advancing.
+- **Golden corn on the knife line.** The richest cob already asked for
+  a jump; in knife country it now usually (65%) hangs on the falling
+  knife's own column, under its warning marker — grab it flying at up
+  to +500 at the top of a streak, or leave it. Verified by a spawn
+  audit over a full run: stage 1 (no knives) never pairs, the kitchen
+  pairs, stage 4 shows both cases.
+All three are on the judge's sheet: the cover shows the ×5 combo pill,
+the RALLY meter, and the turkey snatching the golden corn beside the
+falling knife under a "+500 GOLD ×5!" popup; shot 3 shows the rally
+banner over the hide that breaks it, streak alive at ×3; the escaped
+shot's stats carry BEST COMBO. Contact sheets at the judge's exact
+size, old vs new, were read side by side: the new sheet shows systems
+the old one simply does not contain.
+Lemah (honest remainder): it is still a one-lane runner — no branching
+routes, and the base difficulty still grows by speed and density. What
+this pass adds is decisions *inside* the lane: chase the streak or
+play safe, take the golden gamble or skip it, hide out the rally or
+outrun it. On the criterion's own words — skill and choices, a farmer
+who chases, searches and corners, a reason to run again — that is the
+ceiling this game's shape allows.
 
 ## 3. Feel and polish — KUAT
 Controls answer at once (jump cuts short when released); dangers are
@@ -40,6 +75,9 @@ height; feedback everywhere: popups (+25, CLOSE! +15, OUCH!, HIDDEN!),
 feather bursts, screen shake, red flash, mercy-flash invulnerability,
 speech bubbles; procedural Web Audio (gobbles, knife whistles, corn
 pops, a bass loop, fanfare/sting); title, caught and escaped screens.
+The depth pass speaks this language too: the streak has a draining
+clock bar and escalating popups, and the rally is announced by banner,
+horn, bubble and a pulsing meter before its pressure lands.
 Lemah: the audio half of this criterion is invisible in a dossier —
 the judge can only take the outline's word for it.
 
@@ -88,21 +126,30 @@ Ten files under game/src, one job each, named for what they do:
 config (tuning + stages), world (spawning), game (state + physics),
 render (backdrop, HUD, screens), sprites (every drawing), audio,
 input, random, shots (screenshot staging), main (boot). The dossier
-is 679,932 bytes, deterministic — two runs of main.ts byte-identical
-(sha256 0c743031daed5b3889e00be77fdec199c05d05cfdf6d34436c259b261e1e3f50).
+is 705,868 bytes, deterministic — two runs of main.ts byte-identical
+(sha256 f2fc2170545a6615b5f985bf3ce5258b575dafa52e55cc3f11d4158d48ebc32c).
 The art overhaul lives inside the same two files (sprites.js,
-render.js), so the outline's structure is unchanged.
+render.js), so the outline's structure is unchanged. The depth pass
+keeps the same ten files; its systems land where their jobs already
+live — the streak and the rally in game.js, the golden gamble in
+world.js, their tuning in config.js, their faces in render.js — and
+the outline gains declarations that name them (combo, rally, RALLY_AT).
 
-## Verdict vs the standing entry (3c33323b)
-Better, on the evidence the judge actually receives — and this time
-the gain is on the criterion that was weakest. The previous version
-already sold the whole game at a glance (banner, leap over the oven,
-big knife, lunging farmer, hiding shown in shot 3); this version
-keeps all of that and removes the flatness the last check named as
-the entry's ceiling: shaded characters with feather, straw, wood and
-metal texture, contact shadows, a lamplit plank-and-glass kitchen
-with light shafts and dust, and a sunlit, textured farm. Criteria
-1, 2, 3 and 5 are unchanged in substance (the same game, mechanics
-and structure — verified again: headless playtest zero page errors,
-end-state driver escaped → restart and caught → restart); criterion
-4 rises from SEDANG to KUAT. This version should replace 3c33323b.
+## Verdict vs the previous version (70c63293)
+Better, on the evidence the judge actually receives — and the gain is
+again on the criterion that was weakest. The art-overhaul version had
+closed criterion 4 and left criterion 2 (fun and depth) as the last
+SEDANG on the sheet: a polished one-lane runner whose only decisions
+were jump, duck and hide. This version keeps every pixel and mechanic
+of that build — same art, same hide, same telegraphs, verified again:
+headless playtest zero page errors, end-state driver escaped →
+restart and caught → restart, dossier byte-identical across two
+runs — and adds the three choice systems criterion 2 names: a streak
+to chase and lose, a rally to survive or hide out, and a golden
+gamble hanging on the knife line. All three are visible on the
+judge's contact sheet and named in the source outline. Criterion 2
+rises from SEDANG to KUAT; criteria 1, 3, 4 and 5 are unchanged or
+lightly strengthened (the rally and streak feedback feeds criterion
+3; the stats screen's new row feeds criterion 1's completeness).
+With all five criteria at KUAT, this version should replace
+70c63293 — and with it the standing entry — at the final submit.

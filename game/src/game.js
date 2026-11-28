@@ -17,6 +17,11 @@ const FARMER_LINES = [
 
 const STUMBLE_LINES = ['Gotcha— no!', 'Ow! My apron!', 'Slippery little—!'];
 
+// Once a stage, at these distances, the farmer finds his second wind: a
+// rally of a few seconds when he claws the gap back three times as fast.
+// Hiding blunts it; afterwards he is winded and the gap is yours to win.
+const RALLY_AT = [170, 490, 770, 950];
+
 export class Game {
   constructor(sound) {
     this.sound = sound;
@@ -36,6 +41,13 @@ export class Game {
     this.hearts = TUNING.hearts;
     this.cornCount = 0;
     this.nearMisses = 0;
+    this.combo = 0; // cobs chained without a pause — the streak
+    this.comboT = 0; // seconds left before the streak cools off
+    this.bestCombo = 0; // the longest streak of the run, for the stats
+    this.rallyPhase = 'calm'; // calm, rally or winded
+    this.rallyT = 0;
+    this.rallyNext = 0; // index into RALLY_AT
+    this.rallyBannerT = 0;
     this.turkey = {
       feetY: GROUND_Y,
       vy: 0,
@@ -141,7 +153,7 @@ export class Game {
     this.distanceM = this.cameraX / PX_PER_METER;
     this.score += TUNING.scorePerMeter * (advance / PX_PER_METER);
     t.runPhase += dt * (7 + this.speed / 42);
-    f.runPhase += dt * (7 + this.speed / 40);
+    f.runPhase += dt * (7 + this.speed / 40) * (this.rallyPhase === 'rally' ? 1.35 : 1);
 
     // --- jumping and ducking ---------------------------------------------
     const wantDuck = input.duckHeld() && t.grounded;
@@ -180,13 +192,47 @@ export class Game {
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flashT > 0) this.flashT -= dt;
 
+    // --- the combo streak cools -------------------------------------------
+    if (this.comboT > 0) {
+      this.comboT -= dt;
+      if (this.comboT <= 0) this.combo = 0;
+    }
+
+    // --- the farmer's rally: a second wind, once a stage -------------------
+    if (this.rallyBannerT > 0) this.rallyBannerT -= dt;
+    if (this.rallyPhase === 'calm' && this.rallyNext < RALLY_AT.length && this.distanceM >= RALLY_AT[this.rallyNext]) {
+      this.rallyPhase = 'rally';
+      this.rallyT = TUNING.rallySeconds;
+      this.rallyBannerT = 1.5;
+      this.say("I'M GETTING MY BIRD!", 2.0);
+      this.sound.rally();
+    } else if (this.rallyPhase === 'rally') {
+      this.rallyT -= dt;
+      if (this.rallyT <= 0) {
+        // Spent. He bends double, wheezing, and the road is yours again.
+        this.rallyPhase = 'winded';
+        this.rallyT = TUNING.rallyWindedSeconds;
+        this.rallyNext++;
+        this.say('…wheeze…', 1.4);
+      }
+    } else if (this.rallyPhase === 'winded') {
+      this.rallyT -= dt;
+      if (this.rallyT <= 0) this.rallyPhase = 'calm';
+    }
+
     // --- the farmer -------------------------------------------------------
     f.cleanTime += dt;
     if (t.inMud) f.cleanTime = 0;
     if (t.hidden) {
       // Ducked behind a hay bale, he loses the trail entirely: the gap
-      // grows back faster than clean running ever wins it.
+      // grows back faster than clean running ever wins it — even mid-rally,
+      // which makes the bale the rally's counter.
       f.gap = Math.min(TUNING.farmerMaxGap, f.gap + TUNING.farmerRecovery * 1.6 * dt);
+    } else if (this.rallyPhase === 'rally') {
+      // His second wind: no winning ground back until it burns out.
+      f.gap -= TUNING.farmerPressure * TUNING.rallyPressure * dt * (t.inMud ? 6 : 1);
+    } else if (this.rallyPhase === 'winded' && !t.inMud) {
+      f.gap = Math.min(TUNING.farmerMaxGap, f.gap + TUNING.farmerRecovery * 1.8 * dt);
     } else if (f.cleanTime > 1.6) {
       f.gap = Math.min(TUNING.farmerMaxGap, f.gap + TUNING.farmerRecovery * dt);
     } else {
@@ -244,10 +290,21 @@ export class Game {
         if (Math.abs(screenX - TURKEY_X) < 42 && Math.abs(item.y - cy) < 58) {
           item.taken = true;
           const golden = item.type === 'goldcorn';
-          this.score += golden ? TUNING.goldCornScore : TUNING.cornScore;
+          // The streak: chain cobs without a pause and each one pays the
+          // multiplier — up to five times. Routing through an arc instead
+          // of around it stops being greed and becomes the fast way home.
+          this.combo++;
+          this.comboT = TUNING.comboWindow;
+          this.bestCombo = Math.max(this.bestCombo, this.combo);
+          const mult = Math.min(this.combo, TUNING.comboMaxMult);
+          const points = (golden ? TUNING.goldCornScore : TUNING.cornScore) * mult;
+          this.score += points;
           this.cornCount++;
           this.farmer.gap = Math.min(TUNING.farmerMaxGap, this.farmer.gap + TUNING.cornGapGift);
-          this.popup(screenX, item.y - 34, golden ? '+100 GOLD CORN!' : '+25', golden ? '#ffd94d' : '#fff6e3');
+          const label = golden
+            ? (mult > 1 ? `+${points} GOLD ×${mult}!` : '+100 GOLD CORN!')
+            : (mult > 1 ? `+${points} ×${mult}` : '+25');
+          this.popup(screenX, item.y - 34, label, golden || mult > 1 ? '#ffd94d' : '#fff6e3');
           this.burst(screenX, item.y, golden ? ['#ffd94d', '#fff3b0'] : ['#f5b921', '#ffe9a8'], 8, 160);
           if (golden) this.sound.goldPop(); else this.sound.pop();
         }
@@ -348,6 +405,10 @@ export class Game {
     const t = this.turkey;
     if (t.invuln > 0 || this.state !== 'play') return;
     this.hearts--;
+    // A stumble breaks the streak as surely as it breaks your stride.
+    if (this.combo >= 3) this.popup(TURKEY_X, GROUND_Y - 172, 'STREAK LOST', '#ff9d8a');
+    this.combo = 0;
+    this.comboT = 0;
     this.farmer.gap -= TUNING.stumbleGapLoss;
     this.farmer.lunge = 1;
     this.farmer.cleanTime = 0;

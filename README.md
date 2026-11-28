@@ -20,6 +20,14 @@ you the whole way, shouting about gravy.
   entirely, winning back ground faster than running ever does.
 - **Grab the corn**: every cob distracts the farmer and buys you ground;
   golden corn is worth four times as much.
+- **Chain the corn into a combo**: cobs grabbed in quick succession build
+  a streak that multiplies every pickup up to ×5 — routing *through* an
+  arc beats routing around it, and a stumble breaks the streak.
+- **Golden corn is a gamble**: in knife country the richest cob hangs on
+  the falling knife's own column. Take it flying, or leave it.
+- **Survive the rally**: once a stage the farmer finds a second wind and
+  claws the gap back three times as fast for a few seconds. Hiding blunts
+  it — and afterwards he is winded, and the ground is yours to win back.
 - **Stumble and he lunges.** Three hearts, one ever-closing gap, and a
   narrow-escape slow-motion bonus for clearing dangers by a feather.
 

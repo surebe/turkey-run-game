@@ -117,6 +117,13 @@ export class Renderer {
       text(ctx, stage.shout, VIEW_W / 2, 190, 'bold 44px Georgia, serif', COLORS.cream, 'center', a);
     }
 
+    // Rally banner: the farmer's second wind gets its own shout, in red.
+    if (game.rallyBannerT > 0) {
+      const a = Math.min(1, game.rallyBannerT / 0.4);
+      text(ctx, 'FARMER RALLY!', VIEW_W / 2 + 2, 192, 'bold 46px Georgia, serif', 'rgba(90,20,8,0.6)', 'center', a);
+      text(ctx, 'FARMER RALLY!', VIEW_W / 2, 190, 'bold 46px Georgia, serif', '#e74c3c', 'center', a);
+    }
+
     this.drawLeaves(ctx, game.time);
   }
 
@@ -734,6 +741,23 @@ export class Renderer {
     text(ctx, String(Math.floor(game.score)).padStart(6, '0'), 36, 62, 'bold 30px Georgia, serif', COLORS.cream);
     text(ctx, `🌽 ${game.cornCount}`, 218, 50, 'bold 24px Georgia, serif', '#ffd94d');
 
+    // The combo pill, under the score while a streak is alive: the
+    // multiplier in gold and a bar that drains with the streak's clock,
+    // so the next cob always has a visible deadline.
+    if (game.combo >= 2) {
+      const mult = Math.min(game.combo, TUNING.comboMaxMult);
+      panel(ctx, 18, 88, 196, 38, 'rgba(30,17,8,0.62)');
+      text(ctx, `COMBO ×${mult}`, 32, 103, 'bold 19px Georgia, serif', '#ffd94d');
+      ctx.fillStyle = 'rgba(255,246,227,0.25)';
+      ctx.beginPath();
+      ctx.roundRect(32, 114, 168, 6, 3);
+      ctx.fill();
+      ctx.fillStyle = '#f5a623';
+      ctx.beginPath();
+      ctx.roundRect(32, 114, 168 * Math.max(0, Math.min(1, game.comboT / TUNING.comboWindow)), 6, 3);
+      ctx.fill();
+    }
+
     // Distance and the road to freedom.
     panel(ctx, 424, 16, 432, 64, 'rgba(30,17,8,0.62)');
     const m = Math.min(999, Math.floor(game.distanceM));
@@ -754,12 +778,16 @@ export class Renderer {
       text(ctx, i < game.hearts ? '❤️' : '🖤', 986 + i * 33, 40, '21px Georgia, serif', COLORS.cream, 'center');
     }
     const danger = 1 - Math.max(0, Math.min(1, (game.farmer.gap - TUNING.catchGap) / (TUNING.farmerMaxGap - TUNING.catchGap)));
-    text(ctx, 'FARMER', 1096, 40, 'bold 13px system-ui, sans-serif', '#e8c88a');
+    const rallying = game.rallyPhase === 'rally';
+    text(ctx, rallying ? 'RALLY!' : 'FARMER', 1096, 40, 'bold 13px system-ui, sans-serif', rallying ? '#ff8a75' : '#e8c88a');
     ctx.fillStyle = 'rgba(255,246,227,0.25)';
     ctx.beginPath();
     ctx.roundRect(1150, 30, 92, 13, 6);
     ctx.fill();
-    ctx.fillStyle = danger > 0.72 ? '#e74c3c' : danger > 0.45 ? '#f5a623' : '#7ec850';
+    // Mid-rally the meter itself pulses red: the surge is on the HUD too.
+    ctx.fillStyle = rallying
+      ? (Math.floor(game.time * 6) % 2 === 0 ? '#e74c3c' : '#ff8a75')
+      : danger > 0.72 ? '#e74c3c' : danger > 0.45 ? '#f5a623' : '#7ec850';
     ctx.beginPath();
     ctx.roundRect(1150, 30, 92 * danger, 13, 6);
     ctx.fill();
@@ -872,11 +900,12 @@ export class Renderer {
   }
 
   drawStats(ctx, game, topY = 258) {
-    panel(ctx, 440, topY, 400, 168, 'rgba(30,17,8,0.66)', 18);
+    panel(ctx, 440, topY, 400, 218, 'rgba(30,17,8,0.66)', 18);
     const rows = [
       ['SCORE', String(game.score)],
       ['DISTANCE', `${Math.floor(game.distanceM)} m`],
       ['CORN', `${game.cornCount}`],
+      ['BEST COMBO', `${game.bestCombo} in a row`],
       ['CLOSE CALLS', `${game.nearMisses}`],
       ['BEST', `${game.best}`],
     ];

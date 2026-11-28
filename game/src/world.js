@@ -46,7 +46,15 @@ export class World {
         this.spawnCornArc(this.nextSpawnX);
         this.nextSpawnX += this.rng.range(430, 640);
       } else if (roll < 0.22) {
-        this.items.push({ type: 'goldcorn', x: this.nextSpawnX + 60, y: 470 });
+        // Golden corn hangs high, so it already asks for a jump — and in
+        // knife country it usually hangs on the knife's own column: the
+        // richest grab on the road sits exactly where a carving knife is
+        // about to land. Take it flying, or leave it. That is the gamble.
+        const goldX = this.nextSpawnX + 60;
+        this.items.push({ type: 'goldcorn', x: goldX, y: 470 });
+        if (stage.dangers.includes('knife') && this.rng.chance(0.65)) {
+          this.items.push({ type: 'knife', x: goldX, state: 'armed', t: 0, y: -60 });
+        }
         this.nextSpawnX += this.rng.range(430, 640);
       } else {
         const type = this.rng.pick(stage.dangers);
